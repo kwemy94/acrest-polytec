@@ -29,6 +29,7 @@
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('acrest') ? 'active' : '' }}" href="{{ route('acrest') }}">L'ACREST</a></li>
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('technologies') ? 'active' : '' }}" href="{{ route('technologies') }}">Technologies</a></li>
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('logement') ? 'active' : '' }}" href="{{ route('logement') }}">Logement</a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('bibliotheque.*') ? 'active' : '' }}" href="{{ route('bibliotheque.index') }}">Bibliothèque</a></li>
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('dossier.*', 'paiement.*') ? 'active' : '' }}" href="{{ route('dossier.recherche') }}">Mon dossier</a></li>
                 <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
                     <a class="btn btn-soleil w-100" href="{{ route('inscription.debut') }}"><i class="bi bi-pencil-square me-1"></i> S'inscrire</a>

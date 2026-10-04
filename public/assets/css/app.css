@@ -291,6 +291,14 @@ figure figcaption { font-size: .9rem; color: var(--c-gris); margin-top: .5rem; }
 .statut-warning { background: #FFF3CD; color: #7A5600; }
 .statut-success { background: #D7F0E0; color: #145A32; }
 .statut-danger { background: #F8D7DA; color: #842029; }
+.statut-info { background: #D6EAF2; color: #1B4A5E; }
+.statut-neutre { background: #E9ECEA; color: #454F49; }
+
+.carte-doc { display: flex; flex-direction: column; height: 100%; background: #fff; border: 1px solid var(--c-brume); border-radius: .75rem; padding: 1.25rem; }
+.carte-doc .type-doc { font-size: .8rem; font-weight: 600; color: var(--c-eau); text-transform: uppercase; letter-spacing: .04em; }
+.carte-doc h2 { font-size: 1.15rem; margin: .4rem 0 .25rem; }
+.carte-doc h2 a { color: inherit; text-decoration: none; }
+.carte-doc h2 a:hover { color: var(--c-eau); }
 
 .numero-marchand { font-family: var(--f-titre); font-weight: 800; font-size: 1.5rem; color: var(--c-foret-fonce); letter-spacing: .02em; }
 .operateur input { position: absolute; opacity: 0; }

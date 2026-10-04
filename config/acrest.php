@@ -27,6 +27,37 @@ return [
         'beneficiaire' => env('PAIEMENT_BENEFICIAIRE', 'ACREST Polytechnique'),
     ],
 
+    /*
+    | Règlement de prêt de la bibliothèque (durées en jours).
+    */
+    'bibliotheque' => [
+        'duree_pret' => (int) env('BIBLIO_DUREE_PRET', 14),
+        'max_emprunts' => (int) env('BIBLIO_MAX_EMPRUNTS', 3),
+        'max_prolongations' => (int) env('BIBLIO_MAX_PROLONGATIONS', 1),
+        'delai_retrait' => (int) env('BIBLIO_DELAI_RETRAIT', 3),
+        'rappel_avant_echeance' => (int) env('BIBLIO_RAPPEL_AVANT', 2),
+        'relance_tous_les' => (int) env('BIBLIO_RELANCE_TOUS_LES', 3),
+        // Adresse qui reçoit les nouvelles demandes (vide pour désactiver).
+        'email' => env('BIBLIO_EMAIL', env('ACREST_EMAIL', 'info.acrest@gmail.com')),
+        'horaires' => env('BIBLIO_HORAIRES', 'du lundi au vendredi, de 8 h à 17 h'),
+        // Taille maximale d'un PDF (Mo). Vérifier aussi upload_max_filesize et post_max_size de PHP.
+        'pdf_max_mo' => (int) env('BIBLIO_PDF_MAX_MO', 40),
+    ],
+
+    // Langues proposées pour les documents de la bibliothèque (code => libellé).
+    'langues' => [
+        'fr' => 'Français',
+        'en' => 'Anglais',
+        'es' => 'Espagnol',
+        'de' => 'Allemand',
+        'pt' => 'Portugais',
+        'it' => 'Italien',
+        'ar' => 'Arabe',
+        'zh' => 'Chinois',
+        'multi' => 'Multilingue',
+        'autre' => 'Autre langue',
+    ],
+
     'diplomes' => ['BACC', 'GCE A/L', 'PROBATOIRE', 'GCE O/L', 'BEPC', 'CAP', 'BTS', 'LICENCE', 'MASTER', 'DOCTORAT'],
 
     'nombre_choix' => 3,

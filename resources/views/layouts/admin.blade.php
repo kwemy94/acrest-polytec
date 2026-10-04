@@ -14,10 +14,13 @@
 <body class="admin-body">
 @php
     $enAttente = app(\App\Repositories\Contracts\PaiementRepositoryInterface::class)->compterEnAttente();
+    $demandesEmprunt = app(\App\Repositories\Contracts\EmpruntRepositoryInterface::class)->compteurs()['demandes'];
     $liens = [
         ['admin.dashboard', 'bi-speedometer2', 'Tableau de bord', null],
         ['admin.inscriptions.*', 'bi-people', 'Inscriptions', null],
         ['admin.paiements.*', 'bi-cash-coin', 'Paiements', $enAttente],
+        ['admin.documents.*', 'bi-book', 'Catalogue', null],
+        ['admin.emprunts.*', 'bi-arrow-left-right', 'Emprunts', $demandesEmprunt],
         ['admin.newsletter.*', 'bi-envelope-paper', 'Newsletter', null],
         ['admin.compte', 'bi-shield-lock', 'Mon compte', null],
     ];

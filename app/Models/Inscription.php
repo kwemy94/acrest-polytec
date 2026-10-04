@@ -65,6 +65,17 @@ class Inscription extends Model
         return $this->hasMany(Paiement::class)->latest();
     }
 
+    public function emprunts(): HasMany
+    {
+        return $this->hasMany(Emprunt::class)->latest();
+    }
+
+    /** Seuls les étudiants dont le dossier est validé ont accès au prêt. */
+    public function peutEmprunter(): bool
+    {
+        return $this->statut === StatutInscription::Validee;
+    }
+
     public function dernierPaiement(): HasOne
     {
         return $this->hasOne(Paiement::class)->latestOfMany();

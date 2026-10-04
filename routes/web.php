@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin;
+use App\Http\Controllers\Bibliotheque;
 use App\Http\Controllers\DossierController;
 use App\Http\Controllers\FiliereController;
 use App\Http\Controllers\HomeController;
@@ -55,6 +56,32 @@ Route::post('/paiement', [PaiementController::class, 'store'])->middleware('thro
 
 /*
 |--------------------------------------------------------------------------
+| Bibliothèque : catalogue public, espace emprunts des étudiants
+|--------------------------------------------------------------------------
+*/
+Route::prefix('bibliotheque')->name('bibliotheque.')->group(function () {
+    Route::get('/', [Bibliotheque\CatalogueController::class, 'index'])->name('index');
+    Route::get('/documents/{document}', [Bibliotheque\CatalogueController::class, 'show'])->name('show');
+
+    // Version numérique (étudiants connectés et administrateurs)
+    Route::get('/documents/{document}/lire', [Bibliotheque\LectureController::class, 'lire'])->name('lire');
+    Route::get('/documents/{document}/pdf', [Bibliotheque\LectureController::class, 'fichier'])->name('pdf');
+    Route::get('/documents/{document}/telecharger', [Bibliotheque\LectureController::class, 'telecharger'])->middleware('throttle:20,1')->name('telecharger');
+
+    Route::get('/connexion', [Bibliotheque\LecteurController::class, 'create'])->name('connexion');
+    Route::post('/connexion', [Bibliotheque\LecteurController::class, 'store'])->middleware('throttle:recherche-dossier')->name('connexion.store');
+
+    Route::middleware('lecteur')->group(function () {
+        Route::post('/deconnexion', [Bibliotheque\LecteurController::class, 'destroy'])->name('deconnexion');
+        Route::get('/mes-emprunts', [Bibliotheque\EmpruntController::class, 'index'])->name('emprunts');
+        Route::post('/documents/{document}/demande', [Bibliotheque\EmpruntController::class, 'store'])->middleware('throttle:10,1')->name('demander');
+        Route::post('/emprunts/{emprunt}/annuler', [Bibliotheque\EmpruntController::class, 'annuler'])->name('annuler');
+        Route::post('/emprunts/{emprunt}/prolonger', [Bibliotheque\EmpruntController::class, 'prolonger'])->name('prolonger');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
 | Administration
 |--------------------------------------------------------------------------
 */
@@ -76,6 +103,19 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::get('/paiements', [Admin\PaiementController::class, 'index'])->name('paiements.index');
         Route::patch('/paiements/{paiement}', [Admin\PaiementController::class, 'traiter'])->name('paiements.traiter');
+
+        // Bibliothèque
+        Route::resource('documents', Admin\DocumentController::class);
+        Route::post('/documents/{document}/exemplaires', [Admin\DocumentController::class, 'ajouterExemplaires'])->name('documents.exemplaires.store');
+        Route::patch('/exemplaires/{exemplaire}', [Admin\DocumentController::class, 'etatExemplaire'])->name('exemplaires.update');
+        Route::delete('/exemplaires/{exemplaire}', [Admin\DocumentController::class, 'supprimerExemplaire'])->name('exemplaires.destroy');
+
+        Route::get('/emprunts', [Admin\EmpruntController::class, 'index'])->name('emprunts.index');
+        Route::get('/emprunts/nouveau', [Admin\EmpruntController::class, 'create'])->name('emprunts.create');
+        Route::post('/emprunts', [Admin\EmpruntController::class, 'store'])->name('emprunts.store');
+        Route::patch('/emprunts/{emprunt}/{action}', [Admin\EmpruntController::class, 'traiter'])
+            ->whereIn('action', ['valider', 'refuser', 'remettre', 'retour', 'prolonger'])
+            ->name('emprunts.traiter');
 
         Route::get('/newsletter', [Admin\NewsletterController::class, 'index'])->name('newsletter.index');
         Route::get('/newsletter/export', [Admin\NewsletterController::class, 'export'])->name('newsletter.export');
