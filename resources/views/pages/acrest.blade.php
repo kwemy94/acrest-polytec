@@ -58,14 +58,14 @@
                 </div>
 
                 <h2>Acquis et réalisations</h2>
-                <p class="texte">L'ACREST se veut un lieu d'information, de démonstration et d'utilisation des ressources locales pour répondre aux besoins locaux, comme la construction de pompes manuelles simples qui facilitent l'accès à l'eau potable.</p>
+                <p class="texte">ACREST se veut un lieu d'information, de démonstration et d'utilisation des ressources locales pour répondre aux besoins locaux, comme la construction de pompes manuelles simples qui facilitent l'accès à l'eau potable.</p>
                 <p class="texte">La roue à aubes (noria) installée au centre utilise le courant de la rivière Mi pour élever l'eau vers un canal situé à 5 mètres de hauteur. Cette technologie, vieille de deux millénaires, fonctionne avec une énergie gratuite et inépuisable : un potentiel considérable pour l'irrigation et la sécurité alimentaire.</p>
                 <p class="texte">L'énergie mécanique de la roue hydraulique permet aussi de moudre le maïs, ce qui évite aux habitants de longs déplacements vers les moulins électriques.</p>
-                <p class="texte">L'ACREST s'inscrit dans la vision du NEPAD, qui mise sur le développement de l'Afrique à partir de ses propres ressources, et dans la lutte contre la pauvreté et pour le développement durable.</p>
+                <p class="texte">ACREST s'inscrit dans la vision du NEPAD, qui mise sur le développement de l'Afrique à partir de ses propres ressources, et dans la lutte contre la pauvreté et pour le développement durable.</p>
             </div>
             <div class="col-lg-5">
                 <div class="d-flex flex-column gap-4">
-                    <figure class="m-0"><div class="photo ratio-photo"><img src="{{ asset('images/site/acrest-roue.webp') }}" alt="Roue hydraulique de l'ACREST" loading="lazy"></div><figcaption>Roue hydraulique sur la rivière Mi</figcaption></figure>
+                    <figure class="m-0"><div class="photo ratio-photo"><img src="{{ asset('images/site/acrest-roue.webp') }}" alt="Roue hydraulique de ACREST" loading="lazy"></div><figcaption>Roue hydraulique sur la rivière Mi</figcaption></figure>
                     <figure class="m-0"><div class="photo ratio-photo"><img src="{{ asset('images/site/acrest-pompe.webp') }}" alt="Pompe manuelle à eau" loading="lazy"></div><figcaption>Pompe manuelle pour l'eau potable</figcaption></figure>
                     <figure class="m-0"><div class="photo ratio-photo"><img src="{{ asset('images/site/acrest-noria.webp') }}" alt="Noria élevant l'eau vers un canal" loading="lazy"></div><figcaption>La noria élève l'eau à 5 m de hauteur</figcaption></figure>
                     <div class="encart">

@@ -11,7 +11,7 @@
             <a href="{{ route('inscription.debut') }}" class="btn btn-soleil btn-lg">Commencer mon inscription</a>
             <a href="{{ route('filieres.index') }}" class="btn btn-outline-light btn-lg">Découvrir les formations</a>
         </div>
-        <p class="hero-legende mb-0"><i class="bi bi-camera me-1"></i> Roue à aubes de 5 m construite par l'ACREST sur la rivière Mi, à Bangang.</p>
+        <p class="hero-legende mb-0"><i class="bi bi-camera me-1"></i> Roue à aubes de 5 m construite par ACREST sur la rivière Mi, à Bangang.</p>
     </div>
 </section>
 
@@ -21,7 +21,7 @@
             <div class="col-lg-6">
                 <h2 class="mb-3">Former aux métiers dont le Cameroun a besoin</h2>
                 <p class="texte">ACREST Polytechnique forme les jeunes aux métiers du XXI<sup>e</sup> siècle : accès à l'énergie et à l'eau, sécurité alimentaire, emplois verts, lutte contre les changements climatiques et maîtrise des technologies de l'information.</p>
-                <p class="texte">La formation s'appuie sur le savoir-faire de l'ACREST, association créée en 2003 qui conçoit et fabrique sur place des technologies appropriées au contexte local.</p>
+                <p class="texte">La formation s'appuie sur le savoir-faire de ACREST, association créée en 2003 qui conçoit et fabrique sur place des technologies appropriées au contexte local.</p>
                 <div class="row g-4 mt-2">
                     <div class="col-sm-6"><div class="repere"><strong>40 %</strong> des Camerounais ont accès à l'électricité (Banque mondiale, 2010).</div></div>
                     <div class="col-sm-6"><div class="repere"><strong>35 GW</strong> de potentiel hydroélectrique, pour environ 1 GW installé.</div></div>
@@ -97,7 +97,7 @@
         <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
             <div>
                 <h2 class="mb-2">Réalisé au centre</h2>
-                <p class="text-gris mb-0 texte-court">Des équipements conçus, fabriqués et entretenus par les équipes et les étudiants de l'ACREST.</p>
+                <p class="text-gris mb-0 texte-court">Des équipements conçus, fabriqués et entretenus par les équipes et les étudiants de ACREST.</p>
             </div>
             <a href="{{ route('technologies') }}" class="btn btn-outline-primary">Les technologies appropriées</a>
         </div>
