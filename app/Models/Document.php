@@ -2,17 +2,20 @@
 
 namespace App\Models;
 
-use App\Enums\EtatExemplaire;
-use App\Enums\TypeDocument;
+use App\Enums\NiveauAcces;
+use App\Enums\StatutExemplaire;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * Notice bibliographique. Les compteurs `disponibles_count` et `en_circulation_count`
- * sont chargés par le repository (scope avecDisponibilite).
+ * Notice bibliographique : décrit l'œuvre.
+ * Les compteurs `exemplaires_count`, `disponibles_count`, `empruntes_count` et `numeriques_count`
+ * sont chargés par le scope avecDisponibilite().
  */
 class Document extends Model
 {
@@ -20,19 +23,19 @@ class Document extends Model
 
     protected $fillable = [
         'titre',
-        'auteurs',
+        'sous_titre',
+        'type_document_id',
+        'categorie_id',
         'editeur',
         'annee_publication',
         'isbn',
-        'cote',
-        'type',
         'langue',
-        'filiere_id',
-        'resume',
+        'description',
+        'mots_cles',
+        'nombre_pages',
+        'cote',
         'consultation_sur_place',
-        'fichier',
-        'fichier_taille',
-        'telechargeable',
+        'cree_par',
     ];
 
     protected $attributes = [
@@ -42,41 +45,35 @@ class Document extends Model
     protected function casts(): array
     {
         return [
-            'type' => TypeDocument::class,
             'consultation_sur_place' => 'boolean',
             'annee_publication' => 'integer',
-            'fichier_taille' => 'integer',
-            'telechargeable' => 'boolean',
+            'nombre_pages' => 'integer',
         ];
     }
 
-    protected function langueLibelle(): Attribute
+    public function type(): BelongsTo
     {
-        return Attribute::get(fn () => config("acrest.langues.{$this->langue}") ?? strtoupper((string) $this->langue));
+        return $this->belongsTo(TypeDocument::class, 'type_document_id');
     }
 
-    /** Une version PDF est consultable en ligne. */
-    public function estNumerique(): bool
+    public function categorie(): BelongsTo
     {
-        return (bool) $this->fichier;
+        return $this->belongsTo(Categorie::class);
     }
 
-    /** Taille du PDF lisible (« 3,2 Mo »). */
-    protected function tailleFichier(): Attribute
+    public function auteurs(): BelongsToMany
     {
-        return Attribute::get(fn () => $this->fichier_taille
-            ? number_format($this->fichier_taille / 1048576, 1, ',', ' ').' Mo'
-            : null);
-    }
-
-    public function filiere(): BelongsTo
-    {
-        return $this->belongsTo(Filiere::class);
+        return $this->belongsToMany(Auteur::class, 'document_auteur')->withPivot('ordre')->orderByPivot('ordre');
     }
 
     public function exemplaires(): HasMany
     {
-        return $this->hasMany(Exemplaire::class)->orderBy('id');
+        return $this->hasMany(Exemplaire::class)->orderBy('code_inventaire');
+    }
+
+    public function ressources(): HasMany
+    {
+        return $this->hasMany(RessourceNumerique::class)->latest();
     }
 
     public function emprunts(): HasMany
@@ -84,27 +81,36 @@ class Document extends Model
         return $this->hasMany(Emprunt::class);
     }
 
-    public function scopeAvecDisponibilite($query)
+    public function scopeAvecDisponibilite(Builder $query): Builder
     {
+        $statut = fn (StatutExemplaire ...$s) => fn ($q) => $q->whereIn('statut', array_map(fn ($x) => $x->value, $s));
+
         return $query->withCount([
-            'exemplaires as disponibles_count' => fn ($q) => $q->where('etat', EtatExemplaire::Disponible->value),
-            'exemplaires as en_circulation_count' => fn ($q) => $q->where('etat', '!=', EtatExemplaire::Indisponible->value),
+            'exemplaires' => $statut(...StatutExemplaire::fondsActif()),
+            'exemplaires as disponibles_count' => $statut(StatutExemplaire::Disponible),
+            'exemplaires as empruntes_count' => $statut(StatutExemplaire::Emprunte),
+            'ressources as numeriques_count' => fn ($q) => $q->where('niveau_acces', '!=', NiveauAcces::Restreint->value),
         ]);
     }
 
-    /**
-     * Peut faire l'objet d'une demande en ligne : prêt autorisé, pas de version numérique
-     * (elle se consulte directement) et au moins un exemplaire en circulation.
-     */
-    public function estEmpruntable(): bool
+    protected function nomsAuteurs(): Attribute
     {
-        if ($this->estNumerique()) {
-            return false;
-        }
+        return Attribute::get(fn () => $this->auteurs->pluck('nom')->join(', '));
+    }
 
-        $enCirculation = $this->en_circulation_count
-            ?? $this->exemplaires()->where('etat', '!=', EtatExemplaire::Indisponible->value)->count();
+    protected function titreComplet(): Attribute
+    {
+        return Attribute::get(fn () => $this->titre.($this->sous_titre ? ' : '.$this->sous_titre : ''));
+    }
 
-        return ! $this->consultation_sur_place && $enCirculation > 0;
+    protected function langueLibelle(): Attribute
+    {
+        return Attribute::get(fn () => config("acrest.langues.{$this->langue}") ?? strtoupper((string) $this->langue));
+    }
+
+    /** @return list<string> */
+    public function listeMotsCles(): array
+    {
+        return array_values(array_filter(array_map('trim', explode(',', (string) $this->mots_cles))));
     }
 }

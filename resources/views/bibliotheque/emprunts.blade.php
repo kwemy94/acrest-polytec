@@ -24,7 +24,7 @@
                 <div class="d-flex flex-column flex-md-row gap-3 justify-content-between">
                     <div>
                         <a href="{{ route('bibliotheque.show', $e->document) }}" class="fw-semibold fs-5 text-decoration-none">{{ $e->document->titre }}</a>
-                        <div class="small text-gris">{{ $e->document->auteurs }}{{ $e->exemplaire ? ' · Exemplaire '.$e->exemplaire->code : '' }}</div>
+                        <div class="small text-gris">{{ $e->document->noms_auteurs }}{{ $e->exemplaire ? ' · Exemplaire '.$e->exemplaire->code_inventaire : '' }}</div>
                         <div class="mt-2 d-flex flex-wrap gap-2 align-items-center">
                             <x-statut :statut="$e->statut" />
                             @if ($e->estEnRetard())
@@ -48,7 +48,7 @@
                     </div>
                     <div class="d-flex flex-md-column gap-2 align-items-md-end flex-shrink-0">
                         @if ($e->peutEtreProlonge())
-                            <form method="post" action="{{ route('bibliotheque.prolonger', $e) }}" data-confirmer="Prolonger ce prêt de {{ config('acrest.bibliotheque.duree_pret') }} jours ?">
+                            <form method="post" action="{{ route('bibliotheque.prolonger', $e) }}" data-confirmer="Prolonger ce prêt de {{ $duree }} jours ?">
                                 @csrf
                                 <button class="btn btn-sm btn-outline-primary"><i class="bi bi-calendar-plus me-1"></i>Prolonger</button>
                             </form>
@@ -69,9 +69,10 @@
         @endforelse
 
         <p class="small text-gris">
-            Règles de prêt : {{ config('acrest.bibliotheque.max_emprunts') }} documents maximum à la fois, pour {{ config('acrest.bibliotheque.duree_pret') }} jours,
-            prolongeables {{ config('acrest.bibliotheque.max_prolongations') }} fois si personne n'attend le document.
-            Un document réservé doit être retiré sous {{ config('acrest.bibliotheque.delai_retrait') }} jours.
+            Vos règles de prêt ({{ $lecteur->type->libelle() }}) : {{ $quota }} documents maximum à la fois, pour {{ $duree }} jours,
+            prolongeables {{ $parametres->maxProlongations() }} fois si personne n'attend le document.
+            Un document réservé doit être retiré sous {{ $parametres->delaiRetrait() }} jours.
+            @if ($lecteur->date_expiration) Adhésion valable jusqu'au {{ $lecteur->date_expiration->format('d/m/Y') }}. @endif
         </p>
 
         @if ($historique->isNotEmpty())
@@ -79,15 +80,16 @@
             <div class="recap">
                 <div class="table-responsive">
                     <table class="table mb-0 align-middle">
-                        <thead><tr><th>Document</th><th>Demandé le</th><th>Rendu le</th><th>État</th></tr></thead>
+                        <thead><tr><th>Document</th><th>Emprunté le</th><th>Rendu le</th><th>État</th></tr></thead>
                         <tbody>
                             @foreach ($historique as $e)
                                 <tr>
                                     <td>{{ $e->document->titre }}</td>
-                                    <td class="text-nowrap">{{ $e->created_at->format('d/m/Y') }}</td>
+                                    <td class="text-nowrap">{{ ($e->date_pret ?? $e->created_at)->format('d/m/Y') }}</td>
                                     <td class="text-nowrap">{{ $e->date_retour?->format('d/m/Y') ?? '—' }}</td>
                                     <td>
                                         <x-statut :statut="$e->statut" />
+                                        @if ($e->jours_retard)<div class="small text-danger mt-1">{{ $e->jours_retard }} j de retard</div>@endif
                                         @if ($e->motif)<div class="small text-gris mt-1">{{ $e->motif }}</div>@endif
                                     </td>
                                 </tr>

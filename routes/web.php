@@ -56,17 +56,19 @@ Route::post('/paiement', [PaiementController::class, 'store'])->middleware('thro
 
 /*
 |--------------------------------------------------------------------------
-| Bibliothèque : catalogue public, espace emprunts des étudiants
+| Bibliothèque : catalogue public et espace adhérent
 |--------------------------------------------------------------------------
 */
 Route::prefix('bibliotheque')->name('bibliotheque.')->group(function () {
     Route::get('/', [Bibliotheque\CatalogueController::class, 'index'])->name('index');
     Route::get('/documents/{document}', [Bibliotheque\CatalogueController::class, 'show'])->name('show');
 
-    // Version numérique (étudiants connectés et administrateurs)
-    Route::get('/documents/{document}/lire', [Bibliotheque\LectureController::class, 'lire'])->name('lire');
-    Route::get('/documents/{document}/pdf', [Bibliotheque\LectureController::class, 'fichier'])->name('pdf');
-    Route::get('/documents/{document}/telecharger', [Bibliotheque\LectureController::class, 'telecharger'])->middleware('throttle:20,1')->name('telecharger');
+    // Ressources numériques : droits vérifiés à chaque accès (personnel ou adhérent actif)
+    Route::controller(Bibliotheque\RessourceController::class)->group(function () {
+        Route::get('/ressources/{ressource}', 'consulter')->name('ressources.consulter');
+        Route::get('/ressources/{ressource}/fichier', 'fichier')->name('ressources.fichier');
+        Route::get('/ressources/{ressource}/telecharger', 'telecharger')->middleware('throttle:30,1')->name('ressources.telecharger');
+    });
 
     Route::get('/connexion', [Bibliotheque\LecteurController::class, 'create'])->name('connexion');
     Route::post('/connexion', [Bibliotheque\LecteurController::class, 'store'])->middleware('throttle:recherche-dossier')->name('connexion.store');
@@ -82,7 +84,7 @@ Route::prefix('bibliotheque')->name('bibliotheque.')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Administration
+| Administration (rôles : administrateur, bibliothécaire)
 |--------------------------------------------------------------------------
 */
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -95,32 +97,77 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/deconnexion', [Admin\AuthController::class, 'destroy'])->name('logout');
         Route::get('/', Admin\DashboardController::class)->name('dashboard');
 
-        Route::get('/inscriptions', [Admin\InscriptionController::class, 'index'])->name('inscriptions.index');
-        Route::get('/inscriptions/export', [Admin\InscriptionController::class, 'export'])->name('inscriptions.export');
-        Route::get('/inscriptions/{inscription}', [Admin\InscriptionController::class, 'show'])->name('inscriptions.show');
-        Route::patch('/inscriptions/{inscription}/statut', [Admin\InscriptionController::class, 'statut'])->name('inscriptions.statut');
-        Route::delete('/inscriptions/{inscription}', [Admin\InscriptionController::class, 'destroy'])->name('inscriptions.destroy');
-
-        Route::get('/paiements', [Admin\PaiementController::class, 'index'])->name('paiements.index');
-        Route::patch('/paiements/{paiement}', [Admin\PaiementController::class, 'traiter'])->name('paiements.traiter');
-
-        // Bibliothèque
-        Route::resource('documents', Admin\DocumentController::class);
-        Route::post('/documents/{document}/exemplaires', [Admin\DocumentController::class, 'ajouterExemplaires'])->name('documents.exemplaires.store');
-        Route::patch('/exemplaires/{exemplaire}', [Admin\DocumentController::class, 'etatExemplaire'])->name('exemplaires.update');
-        Route::delete('/exemplaires/{exemplaire}', [Admin\DocumentController::class, 'supprimerExemplaire'])->name('exemplaires.destroy');
-
-        Route::get('/emprunts', [Admin\EmpruntController::class, 'index'])->name('emprunts.index');
-        Route::get('/emprunts/nouveau', [Admin\EmpruntController::class, 'create'])->name('emprunts.create');
-        Route::post('/emprunts', [Admin\EmpruntController::class, 'store'])->name('emprunts.store');
-        Route::patch('/emprunts/{emprunt}/{action}', [Admin\EmpruntController::class, 'traiter'])
-            ->whereIn('action', ['valider', 'refuser', 'remettre', 'retour', 'prolonger'])
-            ->name('emprunts.traiter');
-
-        Route::get('/newsletter', [Admin\NewsletterController::class, 'index'])->name('newsletter.index');
-        Route::get('/newsletter/export', [Admin\NewsletterController::class, 'export'])->name('newsletter.export');
-
         Route::get('/compte', [Admin\CompteController::class, 'edit'])->name('compte');
         Route::put('/compte', [Admin\CompteController::class, 'update'])->name('compte.update');
+
+        /* ---------- Bibliothèque : administrateurs et bibliothécaires ---------- */
+        Route::middleware('role:admin,bibliothecaire')->group(function () {
+            Route::get('/bibliotheque', Admin\Bibliotheque\TableauDeBordController::class)->name('bibliotheque');
+
+            Route::resource('documents', Admin\Bibliotheque\DocumentController::class);
+
+            Route::controller(Admin\Bibliotheque\ExemplaireController::class)->group(function () {
+                Route::get('/exemplaires', 'index')->name('exemplaires.index');
+                Route::post('/documents/{document}/exemplaires', 'store')->name('exemplaires.store');
+                Route::get('/exemplaires/{exemplaire}', 'show')->name('exemplaires.show');
+                Route::put('/exemplaires/{exemplaire}', 'update')->name('exemplaires.update');
+                Route::patch('/exemplaires/{exemplaire}/localisation', 'deplacer')->name('exemplaires.deplacer');
+                Route::patch('/exemplaires/{exemplaire}/statut', 'statut')->name('exemplaires.statut');
+                Route::delete('/exemplaires/{exemplaire}', 'destroy')->name('exemplaires.destroy');
+            });
+
+            Route::resource('localisations', Admin\Bibliotheque\LocalisationController::class)->except(['create', 'edit']);
+
+            Route::post('/adherents/import', [Admin\Bibliotheque\AdherentController::class, 'importer'])->name('adherents.importer');
+            Route::resource('adherents', Admin\Bibliotheque\AdherentController::class)->except('destroy');
+
+            Route::controller(Admin\Bibliotheque\EmpruntController::class)->group(function () {
+                Route::get('/prets', 'index')->name('emprunts.index');
+                Route::get('/prets/nouveau', 'create')->name('emprunts.create');
+                Route::post('/prets', 'store')->name('emprunts.store');
+                Route::get('/prets/retours', 'retours')->name('emprunts.retours');
+                Route::patch('/prets/{emprunt}/retour', 'retour')->name('emprunts.retour');
+                Route::patch('/prets/{emprunt}/perte', 'perte')->name('emprunts.perte');
+                Route::patch('/prets/{emprunt}/prolonger', 'prolonger')->name('emprunts.prolonger');
+                Route::patch('/prets/{emprunt}/{action}', 'traiter')->whereIn('action', ['valider', 'remettre', 'refuser'])->name('emprunts.traiter');
+            });
+
+            Route::controller(Admin\Bibliotheque\RessourceController::class)->group(function () {
+                Route::post('/documents/{document}/ressources', 'store')->name('ressources.store');
+                Route::patch('/ressources/{ressource}', 'update')->name('ressources.update');
+                Route::delete('/ressources/{ressource}', 'destroy')->name('ressources.destroy');
+            });
+
+            Route::get('/journal', [Admin\Bibliotheque\JournalController::class, 'index'])->name('journal');
+        });
+
+        /* ---------- Administrateurs uniquement ---------- */
+        Route::middleware('role:admin')->group(function () {
+            Route::get('/inscriptions', [Admin\InscriptionController::class, 'index'])->name('inscriptions.index');
+            Route::get('/inscriptions/export', [Admin\InscriptionController::class, 'export'])->name('inscriptions.export');
+            Route::get('/inscriptions/{inscription}', [Admin\InscriptionController::class, 'show'])->name('inscriptions.show');
+            Route::patch('/inscriptions/{inscription}/statut', [Admin\InscriptionController::class, 'statut'])->name('inscriptions.statut');
+            Route::delete('/inscriptions/{inscription}', [Admin\InscriptionController::class, 'destroy'])->name('inscriptions.destroy');
+
+            Route::get('/paiements', [Admin\PaiementController::class, 'index'])->name('paiements.index');
+            Route::patch('/paiements/{paiement}', [Admin\PaiementController::class, 'traiter'])->name('paiements.traiter');
+
+            Route::get('/newsletter', [Admin\NewsletterController::class, 'index'])->name('newsletter.index');
+            Route::get('/newsletter/export', [Admin\NewsletterController::class, 'export'])->name('newsletter.export');
+
+            Route::resource('utilisateurs', Admin\UtilisateurController::class)->except(['show', 'destroy'])
+                ->parameters(['utilisateurs' => 'utilisateur']);
+
+            Route::controller(Admin\Bibliotheque\ReferentielController::class)->group(function () {
+                Route::get('/referentiels', 'index')->name('referentiels');
+                Route::post('/referentiels/types', 'enregistrerType')->name('types-documents.store');
+                Route::put('/referentiels/types/{type}', 'enregistrerType')->name('types-documents.update');
+                Route::delete('/referentiels/types/{type}', 'supprimerType')->name('types-documents.destroy');
+                Route::post('/referentiels/categories', 'enregistrerCategorie')->name('categories.store');
+                Route::put('/referentiels/categories/{categorie}', 'enregistrerCategorie')->name('categories.update');
+                Route::delete('/referentiels/categories/{categorie}', 'supprimerCategorie')->name('categories.destroy');
+                Route::put('/referentiels/parametres', 'enregistrerParametres')->name('parametres.update');
+            });
+        });
     });
 });

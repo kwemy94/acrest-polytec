@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Repositories\Contracts\FiliereRepositoryInterface;
+use App\Services\Bibliotheque\PlanBibliotheque;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
@@ -16,7 +17,7 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        $this->app->scoped(PlanBibliotheque::class);
     }
 
     public function boot(): void

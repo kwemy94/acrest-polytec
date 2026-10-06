@@ -11,7 +11,7 @@
 @endphp
 
 @section('contenu')
-<p style="margin-top:0">Bonjour {{ $e->inscription->prenom ?: $e->inscription->nom }},</p>
+<p style="margin-top:0">Bonjour {{ $e->adherent->prenom ?: $e->adherent->nom }},</p>
 
 @switch($evenement)
     @case(E::Demande)
@@ -19,7 +19,7 @@
         @break
     @case(E::Reserve)
         <p>Bonne nouvelle : un exemplaire est mis de côté pour vous.</p>
-        <p style="{{ $encart }}">Retirez-le au comptoir de la bibliothèque <strong>avant le {{ $date($e->retirer_avant) }}</strong> ({{ config('acrest.bibliotheque.horaires') }}), muni de votre code d'inscription <strong>{{ $e->inscription->code }}</strong>. Passé ce délai, la réservation sera annulée.</p>
+        <p style="{{ $encart }}">Retirez-le au comptoir de la bibliothèque <strong>avant le {{ $date($e->retirer_avant) }}</strong> ({{ config('acrest.bibliotheque.horaires') }}), muni de votre carte ou de votre matricule <strong>{{ $e->adherent->matricule }}</strong>. Passé ce délai, la réservation sera annulée.</p>
         @break
     @case(E::Refuse)
         <p>Votre demande d'emprunt n'a pas pu être acceptée.</p>
@@ -47,15 +47,15 @@
         <p style="{{ $encart }}">Merci de le rapporter au plus vite à la bibliothèque. Tant qu'il n'est pas rendu, vous ne pouvez pas faire de nouvelle demande.</p>
         @break
     @case(E::Expire)
-        <p>Le document mis de côté pour vous n'a pas été retiré à temps : la réservation est annulée et l'exemplaire remis à disposition des autres étudiants. Vous pouvez refaire une demande depuis le catalogue.</p>
+        <p>Le document mis de côté pour vous n'a pas été retiré à temps : la réservation est annulée et l'exemplaire remis à disposition des autres adhérents. Vous pouvez refaire une demande depuis le catalogue.</p>
         @break
 @endswitch
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #DDE6DF;border-radius:8px;margin:20px 0">
     <tr><td style="padding:14px 16px">
         <div style="font-weight:700;font-size:16px">{{ $doc->titre }}</div>
-        <div style="color:#5C6B62;font-size:14px">{{ $doc->auteurs }}{{ $doc->cote ? ' · Cote '.$doc->cote : '' }}</div>
-        @if ($e->exemplaire)<div style="color:#5C6B62;font-size:14px">Exemplaire {{ $e->exemplaire->code }}</div>@endif
+        <div style="color:#5C6B62;font-size:14px">{{ $doc->noms_auteurs }}{{ $doc->cote ? ' · Cote '.$doc->cote : '' }}</div>
+        @if ($e->exemplaire)<div style="color:#5C6B62;font-size:14px">Exemplaire {{ $e->exemplaire->code_inventaire }}</div>@endif
     </td></tr>
 </table>
 

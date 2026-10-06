@@ -1,7 +1,7 @@
 <nav class="navbar navbar-expand-lg site-nav sticky-top" aria-label="Navigation principale">
     <div class="container">
         <a class="marque navbar-brand" href="{{ route('accueil') }}">
-            @include('partials.logo', ['taille' => 40])
+            @include('partials.logo', ['taille' => 48])
             <span>
                 <span class="marque-nom">ACREST Polytechnique</span>
                 <span class="marque-sous d-none d-sm-block">Institut supérieur Da Vinci</span>

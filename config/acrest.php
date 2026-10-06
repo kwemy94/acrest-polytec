@@ -28,20 +28,32 @@ return [
     ],
 
     /*
-    | Règlement de prêt de la bibliothèque (durées en jours).
+    | Bibliothèque. Les paramètres de prêt ci-dessous sont les valeurs par défaut :
+    | l'administrateur peut les modifier depuis « Administration › Paramètres de prêt ».
+    | Durées en jours.
     */
     'bibliotheque' => [
-        'duree_pret' => (int) env('BIBLIO_DUREE_PRET', 14),
-        'max_emprunts' => (int) env('BIBLIO_MAX_EMPRUNTS', 3),
-        'max_prolongations' => (int) env('BIBLIO_MAX_PROLONGATIONS', 1),
-        'delai_retrait' => (int) env('BIBLIO_DELAI_RETRAIT', 3),
-        'rappel_avant_echeance' => (int) env('BIBLIO_RAPPEL_AVANT', 2),
-        'relance_tous_les' => (int) env('BIBLIO_RELANCE_TOUS_LES', 3),
-        // Adresse qui reçoit les nouvelles demandes (vide pour désactiver).
+        'pret' => [
+            // Par type d'adhérent : [durée du prêt, nombre maximal de prêts simultanés]
+            'types' => [
+                'etudiant' => ['duree' => 14, 'max' => 3],
+                'enseignant' => ['duree' => 30, 'max' => 8],
+                'chercheur' => ['duree' => 30, 'max' => 8],
+                'personnel' => ['duree' => 21, 'max' => 5],
+                'autre' => ['duree' => 14, 'max' => 2],
+            ],
+            'max_prolongations' => 1,
+            'delai_retrait' => 3,
+            'rappel_avant_echeance' => 2,
+            'relance_tous_les' => 3,
+        ],
+        // Adresse qui reçoit les nouvelles demandes en ligne (vide pour désactiver).
         'email' => env('BIBLIO_EMAIL', env('ACREST_EMAIL', 'info.acrest@gmail.com')),
         'horaires' => env('BIBLIO_HORAIRES', 'du lundi au vendredi, de 8 h à 17 h'),
-        // Taille maximale d'un PDF (Mo). Vérifier aussi upload_max_filesize et post_max_size de PHP.
-        'pdf_max_mo' => (int) env('BIBLIO_PDF_MAX_MO', 40),
+        // Préfixe des codes d'inventaire générés (INV-00001).
+        'prefixe_inventaire' => env('BIBLIO_PREFIXE_INVENTAIRE', 'INV-'),
+        // Taille maximale d'une ressource numérique (Mo). Vérifier aussi upload_max_filesize et post_max_size de PHP.
+        'fichier_max_mo' => (int) env('BIBLIO_FICHIER_MAX_MO', 100),
     ],
 
     // Langues proposées pour les documents de la bibliothèque (code => libellé).

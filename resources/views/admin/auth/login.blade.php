@@ -5,18 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex">
     <title>Connexion — Administration {{ config('acrest.nom') }}</title>
-    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    <link rel="icon" href="{{ asset('favicon.png') }}" type="image/png">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
     <link href="{{ asset('vendor/fonts/fonts.css') }}" rel="stylesheet">
     <link href="{{ asset('vendor/bootstrap/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('vendor/bootstrap-icons/bootstrap-icons.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('assets/css/app.css') }}?v=1" rel="stylesheet">
+    <link href="{{ asset('assets/css/app.css') }}?v=5" rel="stylesheet">
 </head>
 <body class="login-fond d-flex align-items-center py-5">
     <div class="container" style="max-width: 440px">
         <div class="carte-form">
             <div class="carte-form-corps">
                 <div class="marque mb-4">
-                    @include('partials.logo', ['taille' => 44])
+                    @include('partials.logo', ['taille' => 56])
                     <span><span class="marque-nom">ACREST Polytechnique</span><span class="marque-sous">Espace administration</span></span>
                 </div>
                 <h1 class="h3 mb-4">Connexion</h1>

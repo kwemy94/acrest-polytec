@@ -2,15 +2,19 @@
 
 namespace App\Providers;
 
+use App\Repositories\Contracts\AdherentRepositoryInterface;
 use App\Repositories\Contracts\DocumentRepositoryInterface;
 use App\Repositories\Contracts\EmpruntRepositoryInterface;
+use App\Repositories\Contracts\ExemplaireRepositoryInterface;
 use App\Repositories\Contracts\FiliereRepositoryInterface;
 use App\Repositories\Contracts\InscriptionRepositoryInterface;
 use App\Repositories\Contracts\NewsletterRepositoryInterface;
 use App\Repositories\Contracts\PaiementRepositoryInterface;
 use App\Repositories\Contracts\SpecialiteRepositoryInterface;
+use App\Repositories\Eloquent\AdherentRepository;
 use App\Repositories\Eloquent\DocumentRepository;
 use App\Repositories\Eloquent\EmpruntRepository;
+use App\Repositories\Eloquent\ExemplaireRepository;
 use App\Repositories\Eloquent\FiliereRepository;
 use App\Repositories\Eloquent\InscriptionRepository;
 use App\Repositories\Eloquent\NewsletterRepository;
@@ -33,6 +37,8 @@ class RepositoryServiceProvider extends ServiceProvider
         PaiementRepositoryInterface::class => PaiementRepository::class,
         NewsletterRepositoryInterface::class => NewsletterRepository::class,
         DocumentRepositoryInterface::class => DocumentRepository::class,
+        ExemplaireRepositoryInterface::class => ExemplaireRepository::class,
+        AdherentRepositoryInterface::class => AdherentRepository::class,
         EmpruntRepositoryInterface::class => EmpruntRepository::class,
         PasserellePaiementInterface::class => DeclarationManuelle::class,
     ];

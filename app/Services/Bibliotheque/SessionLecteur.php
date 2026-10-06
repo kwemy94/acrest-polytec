@@ -2,14 +2,14 @@
 
 namespace App\Services\Bibliotheque;
 
-use App\Models\Inscription;
+use App\Models\Adherent;
 
-/** Étudiant connecté à l'espace bibliothèque (identifié par son code d'inscription et son e-mail). */
+/** Adhérent connecté à l'espace bibliothèque (identifié par son matricule et son e-mail). */
 class SessionLecteur
 {
-    private const CLE = 'bibliotheque.lecteur';
+    private const CLE = 'bibliotheque.adherent';
 
-    public function courant(): ?Inscription
+    public function courant(): ?Adherent
     {
         $request = request();
 
@@ -18,24 +18,22 @@ class SessionLecteur
         }
 
         $id = $request->session()->get(self::CLE);
-        $inscription = $id ? Inscription::find($id) : null;
+        $adherent = $id ? Adherent::find($id) : null;
 
-        // Un dossier repassé en attente ou rejeté perd l'accès au prêt.
-        if ($inscription && ! $inscription->peutEmprunter()) {
+        if ($id && ! $adherent) {
             $this->deconnecter();
-            $inscription = null;
         }
 
-        $request->attributes->set(self::CLE, $inscription);
+        $request->attributes->set(self::CLE, $adherent);
 
-        return $inscription;
+        return $adherent;
     }
 
-    public function connecter(Inscription $inscription): void
+    public function connecter(Adherent $adherent): void
     {
         request()->session()->regenerate();
-        request()->session()->put(self::CLE, $inscription->id);
-        request()->attributes->set(self::CLE, $inscription);
+        request()->session()->put(self::CLE, $adherent->id);
+        request()->attributes->set(self::CLE, $adherent);
     }
 
     public function deconnecter(): void

@@ -2,9 +2,10 @@
 
 namespace Database\Factories;
 
-use App\Enums\TypeDocument;
+use App\Models\Auteur;
 use App\Models\Document;
-use App\Repositories\Contracts\DocumentRepositoryInterface;
+use App\Models\TypeDocument;
+use App\Services\Bibliotheque\CatalogueService;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<Document> */
@@ -16,20 +17,26 @@ class DocumentFactory extends Factory
     {
         return [
             'titre' => rtrim(fake('fr_FR')->sentence(4), '.'),
-            'auteurs' => fake('fr_FR')->name(),
+            'type_document_id' => fn () => TypeDocument::firstOrCreate(['nom' => 'Livre'])->id,
             'editeur' => fake('fr_FR')->company(),
             'annee_publication' => fake()->numberBetween(1990, (int) now()->year),
             'isbn' => fake()->isbn13(),
-            'cote' => fake()->numerify('###.## ').strtoupper(fake()->lexify('???')),
-            'type' => TypeDocument::Livre,
+            'langue' => 'fr',
             'consultation_sur_place' => false,
         ];
     }
 
-    /** Ajoute N exemplaires disponibles avec leur code-barres. */
-    public function avecExemplaires(int $nombre = 1): static
+    /** Auteurs du document (dans l'ordre). */
+    public function auteurs(string ...$noms): static
     {
-        return $this->afterCreating(fn (Document $document) => app(DocumentRepositoryInterface::class)
-            ->ajouterExemplaires($document, $nombre));
+        return $this->afterCreating(fn (Document $document) => $document->auteurs()->sync(
+            collect($noms)->mapWithKeys(fn ($nom, $i) => [Auteur::firstOrCreate(['nom' => $nom])->id => ['ordre' => $i + 1]])->all()
+        ));
+    }
+
+    /** Ajoute N exemplaires disponibles avec leur code d'inventaire. */
+    public function avecExemplaires(int $nombre = 1, array $attributs = []): static
+    {
+        return $this->afterCreating(fn (Document $document) => app(CatalogueService::class)->ajouterExemplaires($document, $nombre, $attributs));
     }
 }

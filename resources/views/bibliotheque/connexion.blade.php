@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('titre', 'Espace bibliothèque')
+@section('titre', 'Espace adhérent')
 
 @section('contenu')
 <div class="inscription-fond pt-5 pb-5">
@@ -9,29 +9,30 @@
                 <header class="etape-entete">
                     <i class="bi bi-book" aria-hidden="true"></i>
                     <div>
-                        <h1>Espace bibliothèque</h1>
-                        <p>Réservé aux étudiants dont le dossier d'inscription est validé.</p>
+                        <h1>Espace adhérent</h1>
+                        <p>Suivez vos prêts, faites une demande et accédez aux documents numériques.</p>
                     </div>
                 </header>
                 @include('partials.flash')
                 <form method="post" action="{{ route('bibliotheque.connexion.store') }}" class="needs-validation" novalidate>
                     @csrf
                     <div class="mb-3">
-                        <label for="code" class="form-label">Code d'inscription</label>
-                        <input type="text" id="code" name="code" value="{{ old('code') }}" class="form-control text-uppercase @error('code') is-invalid @enderror" placeholder="ISAP-26-XXXXXX" required autofocus autocomplete="off">
-                        <div class="invalid-feedback">@error('code'){{ $message }}@else Saisissez votre code d'inscription. @enderror</div>
+                        <label for="matricule" class="form-label">Matricule</label>
+                        <input type="text" id="matricule" name="matricule" value="{{ old('matricule') }}" class="form-control text-uppercase @error('matricule') is-invalid @enderror" required autofocus autocomplete="off">
+                        <div class="invalid-feedback">@error('matricule'){{ $message }}@else Saisissez votre matricule. @enderror</div>
+                        <div class="form-text">Étudiants : votre code d'inscription (ISAP-…).</div>
                     </div>
                     <div class="mb-4">
-                        <label for="email" class="form-label">Adresse e-mail utilisée lors de l'inscription</label>
+                        <label for="email" class="form-label">Adresse e-mail enregistrée à la bibliothèque</label>
                         <input type="email" id="email" name="email" value="{{ old('email') }}" class="form-control @error('email') is-invalid @enderror" required autocomplete="email">
                         <div class="invalid-feedback">@error('email'){{ $message }}@else Saisissez votre adresse e-mail. @enderror</div>
                     </div>
-                    <button type="submit" class="btn btn-primary btn-lg w-100" data-chargement="Connexion…">Accéder à mes emprunts</button>
+                    <button type="submit" class="btn btn-primary btn-lg w-100" data-chargement="Connexion…">Accéder à mon espace</button>
                 </form>
                 <hr class="my-4">
-                <div class="d-flex flex-column flex-sm-row justify-content-between gap-2 small">
+                <div class="small">
                     <a href="{{ route('bibliotheque.index') }}"><i class="bi bi-arrow-left me-1"></i>Retour au catalogue</a>
-                    <a href="{{ route('dossier.retrouver') }}"><i class="bi bi-key me-1"></i>J'ai perdu mon code</a>
+                    <p class="text-gris mt-2 mb-0">Pas encore adhérent ? Présentez-vous à la bibliothèque, {{ config('acrest.bibliotheque.horaires') }}.</p>
                 </div>
             </div>
         </div>

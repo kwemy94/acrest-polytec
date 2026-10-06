@@ -3,13 +3,14 @@
 namespace App\Http\Controllers\Bibliotheque;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\RechercheDossierRequest;
-use App\Repositories\Contracts\InscriptionRepositoryInterface;
+use App\Repositories\Contracts\AdherentRepositoryInterface;
 use App\Services\Bibliotheque\SessionLecteur;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
-/** Connexion de l'étudiant à l'espace bibliothèque, avec son code d'inscription et son e-mail. */
+/** Connexion de l'adhérent à l'espace bibliothèque, avec son matricule et son e-mail. */
 class LecteurController extends Controller
 {
     public function __construct(private readonly SessionLecteur $session)
@@ -23,26 +24,29 @@ class LecteurController extends Controller
             : view('bibliotheque.connexion');
     }
 
-    public function store(RechercheDossierRequest $request, InscriptionRepositoryInterface $inscriptions): RedirectResponse
+    public function store(Request $request, AdherentRepositoryInterface $adherents): RedirectResponse
     {
-        $inscription = $inscriptions->findByCode($request->validated('code'));
+        $request->merge([
+            'matricule' => Str::upper(trim((string) $request->matricule)),
+            'email' => Str::lower(trim((string) $request->email)),
+        ]);
+        $donnees = $request->validate([
+            'matricule' => ['required', 'string', 'max:30'],
+            'email' => ['required', 'email'],
+        ]);
 
-        if (! $inscription || $inscription->email !== $request->validated('email')) {
+        $adherent = $adherents->parMatricule($donnees['matricule']);
+
+        if (! $adherent || ! $adherent->email || Str::lower($adherent->email) !== $donnees['email']) {
             return back()->withInput()->withErrors([
-                'code' => 'Aucun étudiant ne correspond à ce code et à cette adresse e-mail.',
+                'matricule' => 'Aucun adhérent ne correspond à ce matricule et à cette adresse e-mail.',
             ]);
         }
 
-        if (! $inscription->peutEmprunter()) {
-            return back()->withInput()->withErrors([
-                'code' => 'Le prêt est réservé aux étudiants dont le dossier d\'inscription est validé. Votre dossier est « '.$inscription->statut->libelle().' ».',
-            ]);
-        }
-
-        $this->session->connecter($inscription);
+        $this->session->connecter($adherent);
 
         return redirect()->intended(route('bibliotheque.emprunts'))
-            ->with('succes', 'Bienvenue '.($inscription->prenom ?: $inscription->nom).' ! Vous pouvez maintenant demander des documents.');
+            ->with('succes', 'Bienvenue '.($adherent->prenom ?: $adherent->nom).' !');
     }
 
     public function destroy(): RedirectResponse

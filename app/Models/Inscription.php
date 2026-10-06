@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\Sexe;
 use App\Enums\StatutInscription;
 use App\Enums\StatutPaiement;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -65,15 +66,23 @@ class Inscription extends Model
         return $this->hasMany(Paiement::class)->latest();
     }
 
-    public function emprunts(): HasMany
+    /** Étudiants en règle : dossier validé et frais d'inscription payés (paiement confirmé). */
+    public function scopeEnRegle(Builder $query): Builder
     {
-        return $this->hasMany(Emprunt::class)->latest();
+        return $query->where('statut', StatutInscription::Validee->value)
+            ->whereHas('paiements', fn (Builder $p) => $p->where('statut', StatutPaiement::Valide->value));
     }
 
-    /** Seuls les étudiants dont le dossier est validé ont accès au prêt. */
-    public function peutEmprunter(): bool
+    /** Étudiants en règle qui n'ont pas encore de fiche adhérent à la bibliothèque. */
+    public function scopeSansFicheAdherent(Builder $query): Builder
     {
-        return $this->statut === StatutInscription::Validee;
+        return $query->whereDoesntHave('adherent');
+    }
+
+    /** Fiche adhérent de la bibliothèque créée à partir de ce dossier. */
+    public function adherent(): HasOne
+    {
+        return $this->hasOne(Adherent::class);
     }
 
     public function dernierPaiement(): HasOne

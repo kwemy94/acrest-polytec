@@ -7,12 +7,13 @@
     <title>@hasSection('titre')@yield('titre') — @endif{{ config('acrest.nom') }}</title>
     <meta name="description" content="@yield('description', config('acrest.nom_complet').' : '.config('acrest.slogan').'.')">
     <meta name="theme-color" content="#1D4535">
-    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    <link rel="icon" href="{{ asset('favicon.png') }}" type="image/png">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
 
     <link href="{{ asset('vendor/fonts/fonts.css') }}" rel="stylesheet">
     <link href="{{ asset('vendor/bootstrap/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('vendor/bootstrap-icons/bootstrap-icons.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('assets/css/app.css') }}?v=1" rel="stylesheet">
+    <link href="{{ asset('assets/css/app.css') }}?v=5" rel="stylesheet">
     @stack('styles')
 </head>
 <body>

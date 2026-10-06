@@ -3,8 +3,10 @@
 namespace App\Enums;
 
 /**
- * Cycle d'un emprunt : Demande → Reserve (exemplaire mis de côté) → EnCours → Rendu.
- * Une demande peut être refusée, ou annulée (par l'étudiant ou faute de retrait à temps).
+ * Cycle d'un emprunt.
+ * En ligne : Demande → Reserve (exemplaire mis de côté) → EnCours → Rendu.
+ * Au guichet : EnCours → Rendu (ou Perdu).
+ * Une demande peut être refusée, ou annulée (par l'adhérent ou faute de retrait à temps).
  */
 enum StatutEmprunt: string
 {
@@ -12,6 +14,7 @@ enum StatutEmprunt: string
     case Reserve = 'reserve';
     case EnCours = 'en_cours';
     case Rendu = 'rendu';
+    case Perdu = 'perdu';
     case Refuse = 'refuse';
     case Annule = 'annule';
 
@@ -22,6 +25,7 @@ enum StatutEmprunt: string
             self::Reserve => 'Prêt à retirer',
             self::EnCours => 'En cours',
             self::Rendu => 'Rendu',
+            self::Perdu => 'Déclaré perdu',
             self::Refuse => 'Refusé',
             self::Annule => 'Annulé',
         };
@@ -33,13 +37,12 @@ enum StatutEmprunt: string
             self::Demande => 'warning',
             self::Reserve => 'info',
             self::EnCours => 'success',
-            self::Rendu => 'neutre',
-            self::Refuse => 'danger',
-            self::Annule => 'neutre',
+            self::Rendu, self::Annule => 'neutre',
+            self::Refuse, self::Perdu => 'danger',
         };
     }
 
-    /** Statuts qui comptent dans le quota d'emprunts de l'étudiant. */
+    /** Statuts qui comptent dans le quota de l'adhérent. */
     public static function actifs(): array
     {
         return [self::Demande, self::Reserve, self::EnCours];

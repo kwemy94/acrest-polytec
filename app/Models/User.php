@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\Role;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -22,6 +23,13 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'actif',
+    ];
+
+    protected $attributes = [
+        'role' => 'admin',
+        'actif' => true,
     ];
 
     /**
@@ -44,6 +52,19 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'role' => Role::class,
+            'actif' => 'boolean',
         ];
+    }
+
+    public function estAdmin(): bool
+    {
+        return $this->role === Role::Admin;
+    }
+
+    /** @param  Role|string  ...$roles */
+    public function aRole(Role|string ...$roles): bool
+    {
+        return in_array($this->role, array_map(fn ($r) => $r instanceof Role ? $r : Role::from($r), $roles), true);
     }
 }

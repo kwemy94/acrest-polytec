@@ -2,23 +2,29 @@
 
 namespace App\Models;
 
+use App\Enums\EtatPhysique;
 use App\Enums\StatutEmprunt;
+use App\Services\Bibliotheque\ParametresPret;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Emprunt extends Model
 {
     protected $fillable = [
-        'inscription_id',
+        'adherent_id',
         'document_id',
         'exemplaire_id',
+        'exemplaire_actif_id',
         'statut',
+        'canal',
         'message',
         'motif',
         'retirer_avant',
         'date_pret',
         'date_retour_prevue',
         'date_retour',
+        'jours_retard',
+        'etat_retour',
         'prolongations',
         'rappel_envoye_le',
         'derniere_relance_le',
@@ -29,6 +35,7 @@ class Emprunt extends Model
     {
         return [
             'statut' => StatutEmprunt::class,
+            'etat_retour' => EtatPhysique::class,
             'retirer_avant' => 'date',
             'date_pret' => 'datetime',
             'date_retour_prevue' => 'date',
@@ -36,12 +43,13 @@ class Emprunt extends Model
             'rappel_envoye_le' => 'datetime',
             'derniere_relance_le' => 'datetime',
             'prolongations' => 'integer',
+            'jours_retard' => 'integer',
         ];
     }
 
-    public function inscription(): BelongsTo
+    public function adherent(): BelongsTo
     {
-        return $this->belongsTo(Inscription::class)->withTrashed();
+        return $this->belongsTo(Adherent::class);
     }
 
     public function document(): BelongsTo
@@ -64,12 +72,15 @@ class Emprunt extends Model
         return $this->statut === StatutEmprunt::EnCours && $this->date_retour_prevue?->isBefore(today());
     }
 
+    /** Retard en jours : enregistré au retour, calculé à la date du jour pour un prêt en cours. */
     public function joursDeRetard(): int
     {
-        $fin = $this->date_retour ? $this->date_retour->copy()->startOfDay() : today();
+        if ($this->jours_retard !== null) {
+            return $this->jours_retard;
+        }
 
-        return $this->date_retour_prevue && $fin->isAfter($this->date_retour_prevue)
-            ? (int) $this->date_retour_prevue->diffInDays($fin)
+        return $this->date_retour_prevue && today()->isAfter($this->date_retour_prevue)
+            ? (int) $this->date_retour_prevue->diffInDays(today())
             : 0;
     }
 
@@ -77,7 +88,7 @@ class Emprunt extends Model
     {
         return $this->statut === StatutEmprunt::EnCours
             && ! $this->estEnRetard()
-            && $this->prolongations < (int) config('acrest.bibliotheque.max_prolongations');
+            && $this->prolongations < app(ParametresPret::class)->maxProlongations();
     }
 
     public function peutEtreAnnule(): bool

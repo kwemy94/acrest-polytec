@@ -3,9 +3,9 @@
 namespace App\Repositories\Eloquent;
 
 use App\Enums\StatutEmprunt;
+use App\Models\Adherent;
 use App\Models\Document;
 use App\Models\Emprunt;
-use App\Models\Inscription;
 use App\Repositories\Contracts\EmpruntRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Collection;
 
 class EmpruntRepository extends BaseRepository implements EmpruntRepositoryInterface
 {
-    private const RELATIONS = ['inscription', 'document', 'exemplaire'];
+    private const RELATIONS = ['adherent', 'document', 'exemplaire'];
 
     public function __construct(Emprunt $model)
     {
@@ -33,17 +33,18 @@ class EmpruntRepository extends BaseRepository implements EmpruntRepositoryInter
     public function rechercher(array $filtres, int $perPage = 20): LengthAwarePaginator
     {
         return $this->query()
-            ->with([...self::RELATIONS, 'agent'])
+            ->with([...self::RELATIONS, 'exemplaire.localisation', 'agent'])
             ->when($filtres['q'] ?? null, function (Builder $q, string $terme) {
                 $q->where(fn (Builder $w) => $w
                     ->whereHas('document', fn (Builder $d) => $d->where('titre', 'like', "%{$terme}%"))
-                    ->orWhereHas('exemplaire', fn (Builder $e) => $e->where('code', $terme))
-                    ->orWhereHas('inscription', fn (Builder $i) => $i
-                        ->where('code', 'like', "%{$terme}%")
+                    ->orWhereHas('exemplaire', fn (Builder $e) => $e->where('code_inventaire', 'like', "%{$terme}%")->orWhere('code_barres', $terme))
+                    ->orWhereHas('adherent', fn (Builder $a) => $a
+                        ->where('matricule', 'like', "%{$terme}%")
                         ->orWhere('nom', 'like', "%{$terme}%")
                         ->orWhere('prenom', 'like', "%{$terme}%")));
             })
             ->when($filtres['statut'] ?? null, fn (Builder $q, string $s) => $q->where('statut', $s))
+            ->when($filtres['adherent'] ?? null, fn (Builder $q, $a) => $q->where('adherent_id', $a))
             ->when($filtres['retard'] ?? false, fn (Builder $q) => $this->enRetard($q))
             // Les demandes à traiter d'abord, puis les prêts par échéance.
             ->orderByRaw('case statut when ? then 0 when ? then 1 when ? then 2 else 3 end', [
@@ -55,32 +56,32 @@ class EmpruntRepository extends BaseRepository implements EmpruntRepositoryInter
             ->withQueryString();
     }
 
-    public function duLecteur(Inscription $inscription): Collection
+    public function deAdherent(Adherent $adherent): Collection
     {
         return $this->query()
-            ->with(['document', 'exemplaire'])
-            ->where('inscription_id', $inscription->id)
+            ->with(['document.auteurs', 'exemplaire'])
+            ->where('adherent_id', $adherent->id)
             ->latest()
             ->get();
     }
 
-    public function compterActifs(Inscription $inscription): int
+    public function compterActifs(Adherent $adherent): int
     {
-        return $this->query()->where('inscription_id', $inscription->id)->whereIn('statut', $this->actifs())->count();
+        return $this->query()->where('adherent_id', $adherent->id)->whereIn('statut', $this->actifs())->count();
     }
 
-    public function aDesRetards(Inscription $inscription): bool
+    public function aDesRetards(Adherent $adherent): bool
     {
-        return $this->enRetard($this->query()->where('inscription_id', $inscription->id))->exists();
+        return $this->enRetard($this->query()->where('adherent_id', $adherent->id))->exists();
     }
 
-    public function demandeActive(Inscription $inscription, Document $document): bool
+    public function actifPourDocument(Adherent $adherent, Document $document): ?Emprunt
     {
         return $this->query()
-            ->where('inscription_id', $inscription->id)
+            ->where('adherent_id', $adherent->id)
             ->where('document_id', $document->id)
             ->whereIn('statut', $this->actifs())
-            ->exists();
+            ->first();
     }
 
     public function prochaineDemande(Document $document): ?Emprunt

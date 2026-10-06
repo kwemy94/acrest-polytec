@@ -3,7 +3,7 @@
         <div class="row g-4">
             <div class="col-lg-4">
                 <a class="marque mb-3" href="{{ route('accueil') }}">
-                    @include('partials.logo', ['taille' => 44])
+                    @include('partials.logo', ['taille' => 52, 'fond' => true])
                     <span class="marque-nom text-white">ACREST Polytechnique</span>
                 </a>
                 <p class="texte-court">{{ config('acrest.nom_complet') }}. {{ config('acrest.slogan') }}.</p>

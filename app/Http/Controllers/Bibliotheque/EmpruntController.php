@@ -8,13 +8,14 @@ use App\Models\Document;
 use App\Models\Emprunt;
 use App\Repositories\Contracts\EmpruntRepositoryInterface;
 use App\Services\Bibliotheque\EmpruntService;
+use App\Services\Bibliotheque\ParametresPret;
 use App\Services\Bibliotheque\SessionLecteur;
 use Closure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-/** Espace « Mes emprunts » de l'étudiant. */
+/** Espace « Mes emprunts » de l'adhérent. */
 class EmpruntController extends Controller
 {
     public function __construct(
@@ -23,15 +24,18 @@ class EmpruntController extends Controller
     ) {
     }
 
-    public function index(EmpruntRepositoryInterface $emprunts): View
+    public function index(EmpruntRepositoryInterface $emprunts, ParametresPret $parametres): View
     {
         $lecteur = $this->session->courant();
-        $liste = $emprunts->duLecteur($lecteur);
+        $liste = $emprunts->deAdherent($lecteur);
 
         return view('bibliotheque.emprunts', [
             'lecteur' => $lecteur,
             'actifs' => $liste->filter(fn (Emprunt $e) => $e->statut->estActif()),
             'historique' => $liste->reject(fn (Emprunt $e) => $e->statut->estActif()),
+            'duree' => $parametres->dureePret($lecteur->type),
+            'quota' => $parametres->maxPrets($lecteur->type),
+            'parametres' => $parametres,
         ]);
     }
 
@@ -65,8 +69,8 @@ class EmpruntController extends Controller
 
     private function executer(Emprunt $emprunt, Closure $action, string|Closure $succes): RedirectResponse
     {
-        // Un étudiant n'agit que sur ses propres emprunts.
-        abort_unless((int) $emprunt->inscription_id === (int) $this->session->courant()->id, 404);
+        // Un adhérent n'agit que sur ses propres emprunts.
+        abort_unless((int) $emprunt->adherent_id === (int) $this->session->courant()->id, 404);
 
         try {
             $action();

@@ -28,7 +28,8 @@ class AuthController extends Controller
             ]);
         }
 
-        if (! Auth::attempt($request->validated(), $request->boolean('remember'))) {
+        // Un compte désactivé ne peut plus se connecter.
+        if (! Auth::attempt([...$request->validated(), 'actif' => true], $request->boolean('remember'))) {
             RateLimiter::hit($cle, 60);
 
             return back()->onlyInput('email')->withErrors(['email' => trans('auth.failed')]);

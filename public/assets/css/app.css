@@ -90,6 +90,9 @@ h5, h6 { font-family: var(--f-titre); font-weight: 600; }
 .site-nav .dropdown-item { border-radius: .35rem; padding: .45rem .75rem; }
 .site-nav .dropdown-item:active { background: var(--c-foret); }
 .marque { display: flex; align-items: center; gap: .6rem; text-decoration: none; color: var(--c-foret-fonce); }
+.logo { display: inline-flex; flex-shrink: 0; }
+.logo img { display: block; object-fit: contain; }
+.logo-pastille { background: #fff; border-radius: .6rem; padding: .25rem .35rem; }
 .marque-nom { font-family: var(--f-titre); font-weight: 800; font-size: 1.15rem; line-height: 1; letter-spacing: -0.02em; }
 .marque-sous { display: block; font-size: .72rem; font-weight: 600; color: var(--c-gris); letter-spacing: .01em; margin-top: .15rem; }
 
@@ -349,6 +352,12 @@ figure figcaption { font-size: .9rem; color: var(--c-gris); margin-top: .5rem; }
 .admin-sidebar .nav-link:hover { background: rgba(255, 255, 255, .08); color: #fff; }
 .admin-sidebar .nav-link.active { background: var(--c-soleil); color: var(--c-encre); font-weight: 600; }
 .admin-sidebar .badge { margin-left: auto; }
+/* Menu en une seule colonne : défilement vertical uniquement quand il dépasse la hauteur de l'écran */
+.admin-sidebar .menu-lateral { flex-wrap: nowrap; flex: 1 1 auto; min-height: 0; overflow-x: hidden; overflow-y: auto; scrollbar-width: thin; }
+.admin-sidebar .nav-link > .bi { flex-shrink: 0; }
+.admin-sidebar .nav-link { min-width: 0; overflow-wrap: anywhere; }
+/* Lien de retour de l'espace bibliothèque vers l'administration générale */
+.admin-sidebar .sidebar-retour { font-size: .88rem; border: 1px solid rgba(255, 255, 255, .2); }
 @media (min-width: 992px) {
     .admin-sidebar { position: fixed; top: 0; bottom: 0; left: 0; }
     .admin-main { margin-left: 250px; }

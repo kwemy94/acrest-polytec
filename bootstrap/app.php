@@ -14,7 +14,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->redirectGuestsTo(fn () => route('admin.login'));
         $middleware->redirectUsersTo(fn () => route('admin.dashboard'));
-        $middleware->alias(['lecteur' => \App\Http\Middleware\AuthentifierLecteur::class]);
+        $middleware->alias([
+            'lecteur' => \App\Http\Middleware\AuthentifierLecteur::class,
+            'role' => \App\Http\Middleware\ExigerRole::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

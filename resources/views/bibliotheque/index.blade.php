@@ -1,11 +1,11 @@
 @extends('layouts.app')
 @section('titre', 'Bibliothèque')
-@section('description', 'Catalogue de la bibliothèque d\'ACREST Polytechnique : livres, mémoires, revues et supports de cours disponibles au prêt.')
+@section('description', 'Catalogue de la bibliothèque d\'ACREST Polytechnique : livres, mémoires, revues et ressources numériques.')
 
 @section('contenu')
 @include('partials.entete', [
     'titre' => 'Bibliothèque',
-    'intro' => 'Consultez les ouvrages disponibles et demandez-les en ligne : vous serez prévenu par e-mail dès qu\'ils sont prêts à être retirés.',
+    'intro' => 'Recherchez un document, vérifiez sa disponibilité et son emplacement, consultez les ressources numériques.',
     'ariane' => ['Bibliothèque' => null],
 ])
 
@@ -15,9 +15,23 @@
         @include('bibliotheque._lecteur', ['lecteur' => $lecteur])
 
         <form method="get" class="row g-2 align-items-end mb-4" role="search">
-            <div class="col-lg-3">
+            <div class="col-lg-4">
                 <label for="q" class="form-label small">Rechercher</label>
-                <input type="search" id="q" name="q" value="{{ $filtres['q'] ?? '' }}" class="form-control" placeholder="Titre, auteur, ISBN, cote…">
+                <input type="search" id="q" name="q" value="{{ $filtres['q'] ?? '' }}" class="form-control" placeholder="Titre, auteur, ISBN/ISSN, mot-clé…">
+            </div>
+            <div class="col-6 col-lg-2">
+                <label for="type" class="form-label small">Type</label>
+                <select id="type" name="type" class="form-select">
+                    <option value="">Tous</option>
+                    @foreach ($types as $t)<option value="{{ $t->id }}" @selected((string) ($filtres['type'] ?? '') === (string) $t->id)>{{ $t->nom }}</option>@endforeach
+                </select>
+            </div>
+            <div class="col-6 col-lg-2">
+                <label for="categorie" class="form-label small">Catégorie</label>
+                <select id="categorie" name="categorie" class="form-select">
+                    <option value="">Toutes</option>
+                    @foreach ($categories as $c)<option value="{{ $c->id }}" @selected((string) ($filtres['categorie'] ?? '') === (string) $c->id)>{{ $c->nom }}</option>@endforeach
+                </select>
             </div>
             <div class="col-6 col-lg-2">
                 <label for="langue" class="form-label small">Langue</label>
@@ -26,21 +40,7 @@
                     @foreach (config('acrest.langues') as $code => $libelle)<option value="{{ $code }}" @selected(($filtres['langue'] ?? '') === $code)>{{ $libelle }}</option>@endforeach
                 </select>
             </div>
-            <div class="col-6 col-lg-2">
-                <label for="type" class="form-label small">Type</label>
-                <select id="type" name="type" class="form-select">
-                    <option value="">Tous les types</option>
-                    @foreach ($types as $t)<option value="{{ $t->value }}" @selected(($filtres['type'] ?? '') === $t->value)>{{ $t->libelle() }}</option>@endforeach
-                </select>
-            </div>
-            <div class="col-6 col-lg-3">
-                <label for="filiere" class="form-label small">Filière</label>
-                <select id="filiere" name="filiere" class="form-select">
-                    <option value="">Toutes les filières</option>
-                    @foreach ($filieres as $f)<option value="{{ $f->id }}" @selected((string) ($filtres['filiere'] ?? '') === (string) $f->id)>{{ $f->nom }}</option>@endforeach
-                </select>
-            </div>
-            <div class="col-lg-2"><button class="btn btn-primary w-100"><i class="bi bi-search"></i> Chercher</button></div>
+            <div class="col-6 col-lg-2"><button class="btn btn-primary w-100"><i class="bi bi-search"></i> Chercher</button></div>
             <div class="col-12 d-flex flex-wrap gap-4">
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="disponible" name="disponible" value="1" @checked($filtres['disponible'] ?? false) onchange="this.form.submit()">
@@ -48,7 +48,7 @@
                 </div>
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="numerique" name="numerique" value="1" @checked($filtres['numerique'] ?? false) onchange="this.form.submit()">
-                    <label class="form-check-label" for="numerique"><i class="bi bi-file-earmark-pdf me-1"></i>Version numérique (PDF)</label>
+                    <label class="form-check-label" for="numerique"><i class="bi bi-cloud me-1"></i>Avec version numérique</label>
                 </div>
             </div>
         </form>
@@ -59,15 +59,12 @@
             @forelse ($documents as $document)
                 <div class="col-md-6 col-lg-4">
                     <article class="carte-doc">
-                        <div class="type-doc"><i class="bi {{ $document->type->icone() }} me-1"></i>{{ $document->type->libelle() }}</div>
+                        <div class="type-doc">{{ $document->type->nom }}{{ $document->categorie ? ' · '.$document->categorie->nom : '' }}</div>
                         <h2><a href="{{ route('bibliotheque.show', $document) }}">{{ $document->titre }}</a></h2>
-                        <p class="text-gris small mb-3">{{ $document->auteurs }}{{ $document->annee_publication ? ' · '.$document->annee_publication : '' }} · {{ $document->langue_libelle }}</p>
-                        <div class="mt-auto d-flex flex-wrap justify-content-between align-items-center gap-2">
-                            <div class="d-flex flex-wrap gap-1">
-                                @include('bibliotheque._disponibilite', ['document' => $document])
-                                @if ($document->estNumerique())<span class="statut statut-info"><i class="bi bi-file-earmark-pdf" style="font-size:.8rem"></i> PDF</span>@endif
-                            </div>
-                            <a href="{{ route('bibliotheque.show', $document) }}" class="small">Détails <i class="bi bi-chevron-right"></i></a>
+                        <p class="text-gris small mb-2">{{ $document->noms_auteurs }}{{ $document->annee_publication ? ' · '.$document->annee_publication : '' }} · {{ $document->langue_libelle }}</p>
+                        <div class="mt-auto">
+                            <div class="d-flex flex-wrap gap-1 mb-2">@include('bibliotheque._disponibilite', ['document' => $document])</div>
+                            @include('bibliotheque._localisations', ['document' => $document])
                         </div>
                     </article>
                 </div>
