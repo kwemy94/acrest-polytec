@@ -26,7 +26,7 @@
                         @endif
                     </ul>
                 </li>
-                <li class="nav-item"><a class="nav-link {{ request()->routeIs('acrest') ? 'active' : '' }}" href="{{ route('acrest') }}">L'ACREST</a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('acrest') ? 'active' : '' }}" href="{{ route('acrest') }}">ACREST</a></li>
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('technologies') ? 'active' : '' }}" href="{{ route('technologies') }}">Technologies</a></li>
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('logement') ? 'active' : '' }}" href="{{ route('logement') }}">Logement</a></li>
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('bibliotheque.*') ? 'active' : '' }}" href="{{ route('bibliotheque.index') }}">Bibliothèque</a></li>
